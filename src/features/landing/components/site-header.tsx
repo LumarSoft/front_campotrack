@@ -62,15 +62,23 @@ export function SiteHeader(): React.JSX.Element {
           </nav>
 
           {/* CTA */}
-          <a
-            href="#registro"
-            className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-clay px-5 py-2.5 font-sans text-sm font-medium text-bone transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-[#1f5e38]"
-          >
-            Sumate al piloto
-            <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">
-              →
-            </span>
-          </a>
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+            <Link
+              href="/login"
+              className="hidden rounded-full px-4 py-2.5 font-sans text-sm font-medium text-bone/80 transition-colors duration-200 hover:text-bone sm:inline-flex"
+            >
+              Ingresar
+            </Link>
+            <Link
+              href="/register"
+              className="group inline-flex items-center gap-2 rounded-full bg-clay px-5 py-2.5 font-sans text-sm font-medium text-bone transition-[background-color,transform] duration-200 hover:-translate-y-0.5 hover:bg-[#1f5e38]"
+            >
+              Sumate al piloto
+              <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">
+                →
+              </span>
+            </Link>
+          </div>
         </div>
       </div>
     </header>
