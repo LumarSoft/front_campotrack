@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from '@/components/ui/sonner'
 
 /**
  * App-wide client providers. Creates one QueryClient per browser session
@@ -18,5 +19,10 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
       }),
   )
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <Toaster position="top-right" richColors />
+    </QueryClientProvider>
+  )
 }

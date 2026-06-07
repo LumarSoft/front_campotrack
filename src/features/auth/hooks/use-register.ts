@@ -21,7 +21,7 @@ export function useRegister(): UseMutationResult<AuthResponse, ApiError, Registe
     mutationFn: authService.register,
     onSuccess: ({ accessToken, user }) => {
       setSession(accessToken, user)
-      router.push('/billing')
+      router.push('/dashboard')
     },
   })
 }

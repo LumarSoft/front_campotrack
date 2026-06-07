@@ -12,6 +12,8 @@ interface AuthState {
   user: AuthUser | null
   isAuthenticated: boolean
   setSession: (token: string, user: AuthUser) => void
+  /** Updates the current user (e.g. after editing the profile) keeping the token. */
+  updateUser: (user: AuthUser) => void
   clearSession: () => void
 }
 
@@ -22,6 +24,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       setSession: (token, user) => set({ token, user, isAuthenticated: true }),
+      updateUser: user => set({ user }),
       clearSession: () => set({ token: null, user: null, isAuthenticated: false }),
     }),
     {

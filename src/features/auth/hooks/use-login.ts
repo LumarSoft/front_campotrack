@@ -21,7 +21,7 @@ export function useLogin(): UseMutationResult<AuthResponse, ApiError, LoginReque
     mutationFn: authService.login,
     onSuccess: ({ accessToken, user }) => {
       setSession(accessToken, user)
-      router.push('/billing')
+      router.push('/dashboard')
     },
   })
 }

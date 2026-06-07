@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react'
-import { Providers } from '@/app/providers'
 
 /**
- * Auth route group layout. Scopes the React Query provider to the auth pages,
- * which is where server mutations (login/register) run.
+ * Auth route group layout. The React Query provider now lives in the root
+ * layout (it wraps the whole app), so this layout only scopes the auth pages.
  */
 export default function AuthLayout({ children }: { children: ReactNode }): React.JSX.Element {
-  return <Providers>{children}</Providers>
+  return <>{children}</>
 }

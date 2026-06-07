@@ -1,5 +1,5 @@
 import { apiRequest } from '@/lib/api-client'
-import type { AuthResponse, LoginRequest, RegisterRequest } from '@/types/api/auth'
+import type { AuthResponse, AuthUser, LoginRequest, RegisterRequest, UpdateProfileRequest } from '@/types/api/auth'
 
 /**
  * Auth domain service. The only place that knows the auth endpoint paths and
@@ -13,5 +13,9 @@ export const authService = {
 
   register(payload: RegisterRequest): Promise<AuthResponse> {
     return apiRequest<AuthResponse>('/auth/register', { method: 'POST', body: payload })
+  },
+
+  updateProfile(payload: UpdateProfileRequest, token: string): Promise<AuthUser> {
+    return apiRequest<AuthUser>('/auth/profile', { method: 'PATCH', body: payload, token })
   },
 }

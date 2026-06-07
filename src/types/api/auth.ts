@@ -4,10 +4,13 @@
  * authenticated user (never the password — see the API security rules).
  */
 
+import type { UserRole } from './common'
+
 export interface AuthUser {
   id: number
   email: string
   name: string | null
+  role: UserRole
 }
 
 export interface LoginRequest {
@@ -24,4 +27,9 @@ export interface RegisterRequest {
 export interface AuthResponse {
   accessToken: string
   user: AuthUser
+}
+
+export interface UpdateProfileRequest {
+  name?: string
+  password?: string
 }
