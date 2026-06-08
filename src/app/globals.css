@@ -1,0 +1,256 @@
+@import 'tailwindcss';
+
+/* ----------------------------------------------------------------------------
+   Campo Track — Design tokens (field / white mode)
+   Green is the primary identity. Wheat is reserved for explicit warm callouts
+   only (Fase 2 badges, advisories) — never for interactive hover surfaces.
+---------------------------------------------------------------------------- */
+:root {
+  /* Brand palette */
+  --ink: #142a1d; /* deep forest green — dark surfaces */
+  --bone: #f5f9f3; /* white with a micro green tint — main background */
+  --paper: #ffffff; /* clean white — elevated surfaces (popovers, modals) */
+  --clay: #2a7a4a; /* fresh green — primary accent, CTAs */
+  --clay-deep: #226040; /* deeper green for hovers on primary CTAs */
+  --wheat: #c89040; /* amber/wheat — reserved for explicit warm callouts only */
+  --field: #1c4a2e; /* intense forest green — dark accent */
+  --stone: #5f7568; /* gray-green — secondary text, lines, borders */
+  --stone-soft: #8a9d92; /* lighter gray-green for tertiary text */
+
+  /* Hairlines — a single 1px graphic device. Slightly warmer, much gentler. */
+  --hairline-on-bone: color-mix(in srgb, var(--stone) 16%, transparent);
+  --hairline-strong: color-mix(in srgb, var(--stone) 26%, transparent);
+  --hairline-on-ink: color-mix(in srgb, var(--bone) 12%, transparent);
+
+  /* Motion — single source of truth for easing/duration */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 380ms;
+
+  /* Warm tinted shadows — never cold black */
+  --shadow-soft: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
+    0 4px 12px color-mix(in srgb, var(--ink) 4%, transparent);
+  --shadow-md: 0 4px 18px color-mix(in srgb, var(--ink) 8%, transparent),
+    0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent);
+  --shadow-lg: 0 16px 40px color-mix(in srgb, var(--ink) 14%, transparent),
+    0 2px 6px color-mix(in srgb, var(--ink) 5%, transparent);
+
+  /* shadcn/ui semantic tokens — mapped to the Campo Track palette */
+  --radius: 0.75rem;
+  --background: var(--bone);
+  --foreground: var(--ink);
+  --card: var(--bone);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--clay);
+  --primary-foreground: var(--bone);
+  --secondary: color-mix(in srgb, var(--clay) 8%, var(--bone));
+  --secondary-foreground: var(--field);
+  --muted: color-mix(in srgb, var(--stone) 10%, var(--bone));
+  --muted-foreground: color-mix(in srgb, var(--stone) 88%, var(--ink) 12%);
+  /* Accent: SOFT GREEN tint — replaces the old brown wheat for hover surfaces */
+  --accent: color-mix(in srgb, var(--clay) 10%, var(--bone));
+  --accent-foreground: var(--field);
+  --destructive: #b3261e;
+  --border: var(--hairline-on-bone);
+  --input: var(--hairline-strong);
+  --ring: color-mix(in srgb, var(--clay) 55%, transparent);
+
+  /* Overlay used by Dialog / Sheet — warm ink with blur, never harsh black */
+  --overlay: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-bone: var(--bone);
+  --color-paper: var(--paper);
+  --color-clay: var(--clay);
+  --color-clay-deep: var(--clay-deep);
+  --color-wheat: var(--wheat);
+  --color-field: var(--field);
+  --color-stone: var(--stone);
+  --color-stone-soft: var(--stone-soft);
+
+  --color-hairline-on-bone: var(--hairline-on-bone);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-hairline-on-ink: var(--hairline-on-ink);
+
+  /* shadcn/ui semantic color mappings */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-jakarta);
+
+  /* editorial container */
+  --container-shell: 80rem; /* ~1280px */
+
+  /* Motion as Tailwind utilities */
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+  --ease-spring: var(--ease-spring);
+}
+
+/* ----------------------------------------------------------------------------
+   Base
+---------------------------------------------------------------------------- */
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--bone);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--clay) 30%, transparent);
+  color: var(--ink);
+}
+
+/* Unified focus ring — warm, visible, consistent across every interactive */
+:where(a, button, [role='button'], [tabindex]):focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Disabled cursor — applied globally so every disabled control feels the same */
+:where(button, a, [role='button']):disabled,
+[aria-disabled='true']:where(:not(fieldset)) {
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------------------------------------------
+   Typography
+---------------------------------------------------------------------------- */
+.font-display {
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+}
+
+/* Kicker / eyebrow */
+.kicker {
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.text-hero {
+  font-size: clamp(2.5rem, 6vw, 5.25rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.text-section {
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+}
+
+.text-display-xl {
+  font-size: clamp(2.75rem, 7vw, 5.75rem);
+  line-height: 0.97;
+  letter-spacing: -0.03em;
+}
+
+.measure {
+  max-width: 65ch;
+}
+
+/* ----------------------------------------------------------------------------
+   Hairlines — 1px graphic device
+---------------------------------------------------------------------------- */
+.hairline {
+  border-color: var(--hairline-on-bone);
+}
+.on-ink .hairline,
+.hairline-ink {
+  border-color: var(--hairline-on-ink);
+}
+
+/* ----------------------------------------------------------------------------
+   Surface utilities — consistent elevation language
+---------------------------------------------------------------------------- */
+.surface-card {
+  background: var(--bone);
+  border: 1px solid var(--hairline-on-bone);
+  border-radius: var(--radius-xl);
+  transition:
+    border-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+.surface-card:hover {
+  border-color: color-mix(in srgb, var(--clay) 35%, transparent);
+  box-shadow: var(--shadow-soft);
+}
+
+.surface-elevated {
+  background: var(--paper);
+  border: 1px solid var(--hairline-on-bone);
+  box-shadow: var(--shadow-md);
+}
+
+/* Subtle shimmer for skeletons — replaces the flat wheat-tinted bg */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--stone) 10%, var(--bone)) 0%,
+    color-mix(in srgb, var(--stone) 18%, var(--bone)) 50%,
+    color-mix(in srgb, var(--stone) 10%, var(--bone)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s var(--ease-in-out) infinite;
+}
+
+/* ----------------------------------------------------------------------------
+   Motion — honor prefers-reduced-motion
+---------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
