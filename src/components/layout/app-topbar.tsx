@@ -22,7 +22,7 @@ export function AppTopbar({ user }: { user: AuthUser }): React.JSX.Element {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-3 border-b border-hairline-on-bone bg-bone px-4 lg:px-8">
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-3 border-b border-hairline-on-bone bg-bone/85 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-bone/70 lg:px-8">
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Abrir menú">
@@ -45,7 +45,11 @@ export function AppTopbar({ user }: { user: AuthUser }): React.JSX.Element {
       </Sheet>
 
       <div className="hidden md:flex md:items-center md:gap-2">
-        <span className="rounded-full border border-hairline-on-bone px-4 py-1.5 font-sans text-xs text-stone">
+        <span
+          data-tour="filter"
+          className="inline-flex items-center gap-2 rounded-full border border-hairline-on-bone bg-bone px-4 py-1.5 font-sans text-xs text-stone shadow-[var(--shadow-soft)] transition-colors duration-150 hover:border-clay/30 hover:text-ink"
+        >
+          <span className="size-1.5 rounded-full bg-clay" aria-hidden />
           Todos los campos · Campaña activa
         </span>
       </div>

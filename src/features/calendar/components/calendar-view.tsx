@@ -150,7 +150,7 @@ export function CalendarView(): React.JSX.Element {
           No pudimos cargar el calendario. {eventsQuery.error.message}
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div data-tour="calendar-body" className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             {eventsQuery.isLoading ? (
               <Skeleton className="h-[28rem] w-full rounded-2xl bg-[color-mix(in_srgb,var(--stone)_14%,var(--bone))]" />

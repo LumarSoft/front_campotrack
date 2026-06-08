@@ -13,6 +13,7 @@ export function LoadRecordFab(): React.JSX.Element {
 
   return (
     <Button
+      data-tour="fab"
       onClick={openComposer}
       className="fixed bottom-6 right-6 z-40 h-14 gap-2 rounded-full bg-clay pl-4 pr-6 text-bone shadow-[0_16px_40px_-12px_rgba(22,43,30,0.5)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#1f5e38]"
     >
