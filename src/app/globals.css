@@ -1,0 +1,172 @@
+@import 'tailwindcss';
+
+/* ----------------------------------------------------------------------------
+   Campo Track — Design tokens (field / white mode)
+   Green is the primary color. Clean white dominates the light sections.
+---------------------------------------------------------------------------- */
+:root {
+  --ink: #162b1e; /* deep forest green — dark backgrounds */
+  --bone: #f4f9f3; /* white with a micro green tint — main background */
+  --clay: #2a7a4a; /* fresh green — primary accent, CTAs */
+  --wheat: #c89040; /* amber/wheat — warm secondary accent */
+  --field: #1c4a2e; /* intense forest green — dark accent */
+  --stone: #627a6b; /* gray-green — secondary text, lines, borders */
+
+  /* hairline: thin 1px line using stone at low opacity */
+  --hairline-on-bone: color-mix(in srgb, var(--stone) 22%, transparent);
+  --hairline-on-ink: color-mix(in srgb, var(--bone) 18%, transparent);
+
+  /* shadcn/ui semantic tokens — mapped to the Campo Track palette */
+  --radius: 0.625rem;
+  --background: var(--bone);
+  --foreground: var(--ink);
+  --card: var(--bone);
+  --card-foreground: var(--ink);
+  --popover: var(--bone);
+  --popover-foreground: var(--ink);
+  --primary: var(--clay);
+  --primary-foreground: var(--bone);
+  --secondary: color-mix(in srgb, var(--stone) 16%, var(--bone));
+  --secondary-foreground: var(--ink);
+  --muted: color-mix(in srgb, var(--stone) 12%, var(--bone));
+  --muted-foreground: var(--stone);
+  --accent: var(--wheat);
+  --accent-foreground: var(--ink);
+  --destructive: #b3261e;
+  --border: var(--hairline-on-bone);
+  --input: var(--hairline-on-bone);
+  --ring: var(--clay);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-bone: var(--bone);
+  --color-clay: var(--clay);
+  --color-wheat: var(--wheat);
+  --color-field: var(--field);
+  --color-stone: var(--stone);
+
+  --color-hairline-on-bone: var(--hairline-on-bone);
+  --color-hairline-on-ink: var(--hairline-on-ink);
+
+  /* shadcn/ui semantic color mappings */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-jakarta);
+
+  /* editorial container */
+  --container-shell: 80rem; /* ~1280px */
+}
+
+/* ----------------------------------------------------------------------------
+   Base
+---------------------------------------------------------------------------- */
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--bone);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--clay);
+  color: var(--bone);
+}
+
+/* Visible, warm focus ring on every interactive element */
+:where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+/* ----------------------------------------------------------------------------
+   Typography
+---------------------------------------------------------------------------- */
+.font-display {
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+}
+
+/* Kicker / eyebrow */
+.kicker {
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Scale with clamp() — tight tracking for an impactful sans-serif */
+.text-hero {
+  font-size: clamp(2.5rem, 6vw, 5.25rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.text-section {
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+}
+
+.text-display-xl {
+  font-size: clamp(2.75rem, 7vw, 5.75rem);
+  line-height: 0.97;
+  letter-spacing: -0.03em;
+}
+
+.measure {
+  max-width: 65ch;
+}
+
+/* ----------------------------------------------------------------------------
+   Hairlines — 1px graphic device
+---------------------------------------------------------------------------- */
+.hairline {
+  border-color: var(--hairline-on-bone);
+}
+.on-ink .hairline,
+.hairline-ink {
+  border-color: var(--hairline-on-ink);
+}
+
+/* ----------------------------------------------------------------------------
+   Motion — honor prefers-reduced-motion
+---------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
