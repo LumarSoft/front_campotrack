@@ -6,6 +6,7 @@ import { AppTopbar } from '@/components/layout/app-topbar'
 import { LoadRecordFab } from '@/components/layout/load-record-fab'
 import { RecordComposer } from '@/features/records/components/record-composer'
 import { RecordSyncEngine } from '@/features/records/components/record-sync-engine'
+import { OnboardingTour } from '@/features/onboarding/components/onboarding-tour'
 import { useRequireAuth } from '@/features/auth/hooks/use-require-auth'
 
 /**
@@ -33,6 +34,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }): 
       <LoadRecordFab />
       <RecordComposer />
       <RecordSyncEngine />
+      <OnboardingTour userId={user.id} />
     </div>
   )
 }
