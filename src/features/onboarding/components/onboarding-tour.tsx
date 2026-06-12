@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
@@ -331,10 +331,9 @@ export function OnboardingTour({ userId }: OnboardingTourProps): React.JSX.Eleme
     setTooltipHeight(prev => (Math.abs(measured - prev) > 1 ? measured : prev))
   }, [step?.id, viewport.w])
 
-  const position = useMemo<TooltipPosition>(() => {
-    if (!step) return { top: 0, left: 0, centered: true }
-    return computeTooltipPosition(rect, step.placement, step.padding ?? 8, tooltipHeight, viewport.w, viewport.h)
-  }, [rect, step, tooltipHeight, viewport])
+  const position: TooltipPosition = step
+    ? computeTooltipPosition(rect, step.placement, step.padding ?? 8, tooltipHeight, viewport.w, viewport.h)
+    : { top: 0, left: 0, centered: true }
 
   useEffect(() => {
     const tourId = ROUTE_TO_TOUR[pathname]
