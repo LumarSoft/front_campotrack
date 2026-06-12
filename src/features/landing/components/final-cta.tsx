@@ -40,7 +40,7 @@ export function FinalCta(): React.JSX.Element {
 
         <Reveal delay={0.22}>
           <div className="mt-12 flex flex-col items-start gap-5">
-            <CtaButton href="/register">Sumate al piloto</CtaButton>
+            <CtaButton href="/register">Probar demo</CtaButton>
             <p className="font-sans text-sm text-bone/55">Estamos sumando un grupo reducido de agrónomos al piloto.</p>
           </div>
         </Reveal>

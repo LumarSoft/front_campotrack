@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const REGISTER_PANEL: BrandPanelContent = {
   videoSrc: '/videoRegistro.mp4',
-  kicker: 'Sumate al piloto',
+  kicker: 'Probar demo',
   headline: 'Tu campaña entera, en un solo lugar.',
   bullets: [
     'Gratis durante el piloto, sin tarjeta ni compromiso.',
@@ -24,7 +24,7 @@ export default function RegisterPage(): React.JSX.Element {
   return (
     <AuthShell
       title="Creá tu cuenta"
-      subtitle="Sumate al piloto y empezá a ordenar tu campaña."
+      subtitle="Probar demo y empezá a ordenar tu campaña."
       panel={REGISTER_PANEL}
     >
       <RegisterForm />

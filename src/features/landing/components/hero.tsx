@@ -68,7 +68,7 @@ export function Hero(): React.JSX.Element {
           </p>
 
           <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
-            <CtaButton href="#registro">Sumate al piloto</CtaButton>
+            <CtaButton href="#registro">Probar demo</CtaButton>
             <a
               href="#como-funciona"
               className="group inline-flex items-center gap-2 font-sans text-base text-bone/90 transition-colors duration-200 hover:text-bone"

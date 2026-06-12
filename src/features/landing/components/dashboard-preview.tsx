@@ -98,7 +98,7 @@ export function DashboardPreview(): React.JSX.Element {
 
       {/* Alert strip */}
       <div className="mx-3 mb-3 flex items-center gap-2 rounded-lg border border-wheat/30 bg-[color-mix(in_srgb,var(--wheat)_8%,white)] px-3 py-1.5">
-        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-wheat" />
+        <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-wheat" />
         <p className="text-[9px] text-ink/80">
           <span className="font-semibold">Fumigación</span> · Lote 7 ·{' '}
           <span className="text-wheat font-semibold">Hoy</span>

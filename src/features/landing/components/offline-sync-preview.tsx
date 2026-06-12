@@ -1,6 +1,6 @@
 'use client'
 
-import { useSyncAnimation } from '@/features/landing/hooks/use-sync-animation'
+import { useStepLoop } from '@/features/landing/hooks/use-step-loop'
 
 const EVENTS = ['Fumigación · Lote 3', 'Siembra · Lote 1', 'Rinde · Lote 7', 'Aplicación · Lote 5']
 
@@ -17,7 +17,7 @@ function getItemState(step: number, idx: number): ItemState {
 }
 
 export function OfflineSyncPreview(): React.JSX.Element {
-  const step = useSyncAnimation(EVENTS.length + 1, STEP_DELAYS)
+  const step = useStepLoop(EVENTS.length + 1, STEP_DELAYS)
 
   const isSyncing = step > 0
   const allDone = step === EVENTS.length + 1
