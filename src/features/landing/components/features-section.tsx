@@ -1,6 +1,10 @@
 import { Reveal } from '@/components/ui/reveal'
+import { CalendarPreview } from './calendar-preview'
 import { DashboardPreview } from './dashboard-preview'
+import { HistoryBars } from './history-bars'
+import { MarketTicker } from './market-ticker'
 import { OfflineSyncPreview } from './offline-sync-preview'
+import { TeamAvatars } from './team-avatars'
 
 /**
  * Asymmetric bento (7/5 alternating). Every tile has a distinct interior
@@ -47,21 +51,7 @@ export function FeaturesSection(): React.JSX.Element {
           {/* Real profitability — highlight, big live quote */}
           <Reveal delay={0.06} className="lg:col-span-5">
             <article className="flex h-full flex-col justify-between gap-8 rounded-2xl border border-clay/40 bg-[color-mix(in_srgb,var(--clay)_7%,var(--bone))] p-7">
-              <div>
-                <div className="flex items-baseline justify-between border-b border-hairline-on-bone pb-3">
-                  <span className="font-sans text-xs uppercase tracking-[0.14em] text-clay">
-                    Mercado de Rosario · en vivo
-                  </span>
-                  <span className="flex items-center gap-1.5 font-sans text-xs text-field">
-                    <span className="h-1.5 w-1.5 rounded-full bg-field" />
-                    tiempo real
-                  </span>
-                </div>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className="font-display text-4xl font-bold tracking-tight">US$ 312</span>
-                  <span className="font-sans text-sm text-ink/60">/ tn soja</span>
-                </div>
-              </div>
+              <MarketTicker />
               <div>
                 <h3 className="font-display text-2xl font-semibold">Rentabilidad real</h3>
                 <p className="mt-2 font-sans text-ink/70">
@@ -82,18 +72,7 @@ export function FeaturesSection(): React.JSX.Element {
                   email y en la app.
                 </p>
               </div>
-              <ul className="shrink-0 space-y-2.5 font-sans text-sm sm:min-w-[12rem]">
-                {[
-                  ['Siembra', 'Lote 4 · Nte'],
-                  ['Fumigación', 'Lote 7 · Sur'],
-                  ['Cosecha', 'Lote 2'],
-                ].map(([ev, lote]) => (
-                  <li key={ev} className="flex items-center justify-between border-b border-hairline-on-bone pb-2">
-                    <span className="text-ink">{ev}</span>
-                    <span className="text-stone">{lote}</span>
-                  </li>
-                ))}
-              </ul>
+              <CalendarPreview />
             </article>
           </Reveal>
 
@@ -106,36 +85,14 @@ export function FeaturesSection(): React.JSX.Element {
                   Compará hasta 4 campañas y recibí recomendaciones de fechas y dosis con tus propios datos.
                 </p>
               </div>
-              <div className="flex shrink-0 items-end gap-2.5" aria-hidden>
-                {[40, 64, 52, 78].map((h, idx) => (
-                  <div key={idx} className="flex flex-col items-center gap-1.5">
-                    <div
-                      className="w-7 rounded-t-sm"
-                      style={{
-                        height: `${h}px`,
-                        background: idx === 3 ? 'var(--clay)' : 'color-mix(in srgb, var(--stone) 45%, transparent)',
-                      }}
-                    />
-                    <span className="font-sans text-[0.65rem] text-stone">C{idx + 1}</span>
-                  </div>
-                ))}
-              </div>
+              <HistoryBars />
             </article>
           </Reveal>
 
           {/* Team and permissions — small, initials */}
           <Reveal delay={0.06} className="lg:col-span-5">
             <article className="flex h-full flex-col justify-between gap-8 rounded-2xl border border-hairline-on-bone p-7">
-              <div className="flex -space-x-2" aria-hidden>
-                {['MB', 'JP', 'RG', '+'].map(ini => (
-                  <span
-                    key={ini}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-bone bg-field font-sans text-xs font-medium text-bone"
-                  >
-                    {ini}
-                  </span>
-                ))}
-              </div>
+              <TeamAvatars />
               <div>
                 <h3 className="font-display text-2xl font-semibold">Equipo y permisos</h3>
                 <p className="mt-2 font-sans text-ink/70">

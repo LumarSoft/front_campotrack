@@ -3,7 +3,7 @@ import { Wordmark } from '@/components/ui/wordmark'
 const LINKS = [
   { label: 'Cómo funciona', href: '#como-funciona' },
   { label: 'Funcionalidades', href: '#funcionalidades' },
-  { label: 'Sumate al piloto', href: '#registro' },
+  { label: 'Probar demo', href: '#registro' },
   { label: 'Contacto', href: '#' },
 ]
 
