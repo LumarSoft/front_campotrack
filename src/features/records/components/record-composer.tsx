@@ -14,8 +14,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import { PILL_PRIMARY } from '@/components/ui/pill-button'
 import { useOnlineStatus } from '@/hooks/use-online-status'
+import { useFields, useField } from '@/features/fields/hooks/use-fields-queries'
 import { useCampaigns } from '@/features/calendar/hooks/use-calendar-queries'
 import { useRecordComposerStore } from '@/features/records/store/use-record-composer-store'
 import { usePendingRecordsStore } from '@/features/records/store/use-pending-records-store'
@@ -28,17 +30,21 @@ function todayKey(): string {
 }
 
 /**
- * Global "+ Cargar registro" composer. Saves the record to the offline queue
- * (so it works without signal); the sync engine flushes it when back online.
+ * Global "+ Cargar registro" composer. A record is anchored to a field and,
+ * optionally, to one of its lotes — no campaign required. Saves to the offline
+ * queue; the sync engine flushes it when back online.
  */
 export function RecordComposer(): React.JSX.Element {
   const open = useRecordComposerStore(state => state.open)
   const closeComposer = useRecordComposerStore(state => state.closeComposer)
   const enqueue = usePendingRecordsStore(state => state.enqueue)
   const isOnline = useOnlineStatus()
-  const campaignsQuery = useCampaigns()
-  const campaigns = campaignsQuery.data ?? []
 
+  const fieldsQuery = useFields()
+  const fields = fieldsQuery.data ?? []
+
+  const [fieldId, setFieldId] = useState('')
+  const [subdivisionId, setSubdivisionId] = useState('')
   const [campaignId, setCampaignId] = useState('')
   const [subtype, setSubtype] = useState<RecordSubtype>('SOWING')
   const [recordDate, setRecordDate] = useState('')
@@ -46,8 +52,20 @@ export function RecordComposer(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [wasOpen, setWasOpen] = useState(false)
 
+  const fieldDetailQuery = useField(fieldId ? Number(fieldId) : Number.NaN)
+  const lotes = fieldDetailQuery.data?.subdivisions ?? []
+
+  const campaignsQuery = useCampaigns(fieldId ? Number(fieldId) : undefined)
+  // Campaigns relevant to the chosen scope: those of the selected lote (or the
+  // whole field) so a Siembra record can feed that campaign's progress.
+  const campaigns = (fieldId ? (campaignsQuery.data ?? []) : []).filter(campaign =>
+    subdivisionId ? campaign.subdivisionId === Number(subdivisionId) || campaign.subdivisionId === null : true,
+  )
+
   if (open && !wasOpen) {
     setWasOpen(true)
+    setFieldId('')
+    setSubdivisionId('')
     setCampaignId('')
     setSubtype('SOWING')
     setRecordDate(todayKey())
@@ -57,16 +75,29 @@ export function RecordComposer(): React.JSX.Element {
     setWasOpen(false)
   }
 
-  const fields = RECORD_FIELDS[subtype]
+  const fields_ = RECORD_FIELDS[subtype]
   const setValue = (key: string, value: string): void => setValues(current => ({ ...current, [key]: value }))
+
+  const fieldOptions = fields.map(field => ({ value: String(field.id), label: field.name }))
+
+  const handleFieldChange = (value: string): void => {
+    setFieldId(value)
+    setSubdivisionId('')
+    setCampaignId('')
+  }
+
+  const handleLoteChange = (value: string): void => {
+    setSubdivisionId(value === 'none' ? '' : value)
+    setCampaignId('')
+  }
 
   const handleSubmit = (formEvent: React.FormEvent): void => {
     formEvent.preventDefault()
-    if (!campaignId) return setError('Elegí una campaña.')
+    if (!fieldId) return setError('Elegí un campo.')
     if (!recordDate) return setError('Elegí una fecha.')
 
     const data: Record<string, unknown> = {}
-    for (const field of fields) {
+    for (const field of fields_) {
       const raw = values[field.key]?.trim() ?? ''
       if (!raw) {
         if (field.required) return setError(`Completá "${field.label}".`)
@@ -75,10 +106,13 @@ export function RecordComposer(): React.JSX.Element {
       data[field.key] = field.kind === 'number' ? Number(raw) : raw
     }
 
-    const campaign = campaigns.find(c => c.id === Number(campaignId))
+    const selectedField = fields.find(item => item.id === Number(fieldId))
+    const selectedLote = lotes.find(item => item.id === Number(subdivisionId))
     const payload: CreateRecordRequest = {
       subtype,
-      campaignId: Number(campaignId),
+      fieldId: Number(fieldId),
+      subdivisionId: subdivisionId ? Number(subdivisionId) : undefined,
+      campaignId: campaignId ? Number(campaignId) : undefined,
       recordDate,
       data,
       clientUpdatedAt: new Date().toISOString(),
@@ -90,7 +124,7 @@ export function RecordComposer(): React.JSX.Element {
       display: {
         subtype,
         recordDate,
-        fieldLabel: campaign ? `${campaign.fieldName} · ${campaign.crop.name} ${campaign.cycle}` : '',
+        fieldLabel: [selectedField?.name, selectedLote?.name].filter(Boolean).join(' · '),
         summary: summarizeRecord(subtype, data),
       },
       status: 'PENDING',
@@ -135,28 +169,66 @@ export function RecordComposer(): React.JSX.Element {
           </div>
 
           <div className="space-y-2">
-            <Label>Campaña</Label>
-            {campaigns.length > 0 ? (
-              <Select value={campaignId} onValueChange={setCampaignId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Elegí una campaña" />
-                </SelectTrigger>
-                <SelectContent>
-                  {campaigns.map(campaign => (
-                    <SelectItem key={campaign.id} value={String(campaign.id)}>
-                      {campaign.fieldName} · {campaign.crop.name} {campaign.cycle}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Label htmlFor="record-field">Campo</Label>
+            {fields.length > 0 ? (
+              <SearchableSelect
+                id="record-field"
+                options={fieldOptions}
+                value={fieldId}
+                onChange={handleFieldChange}
+                placeholder="Elegí un campo"
+                searchPlaceholder="Buscar campo…"
+              />
             ) : (
               <p className="rounded-md border border-dashed border-hairline-on-bone px-3 py-2 text-sm text-stone">
-                Primero creá una campaña en Campos y Campañas.
+                Primero creá un campo en Campos y Campañas.
               </p>
             )}
           </div>
 
-          {fields.map(field => (
+          {fieldId && lotes.length > 0 && (
+            <div className="space-y-2">
+              <Label>Lote (opcional)</Label>
+              <Select value={subdivisionId || 'none'} onValueChange={handleLoteChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todo el campo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Todo el campo</SelectItem>
+                  {lotes.map(lote => (
+                    <SelectItem key={lote.id} value={String(lote.id)}>
+                      {lote.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {fieldId && campaigns.length > 0 && (
+            <div className="space-y-2">
+              <Label>Campaña (opcional)</Label>
+              <Select value={campaignId || 'none'} onValueChange={value => setCampaignId(value === 'none' ? '' : value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin campaña" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin campaña</SelectItem>
+                  {campaigns.map(campaign => (
+                    <SelectItem key={campaign.id} value={String(campaign.id)}>
+                      {campaign.crop.name} {campaign.cycle}
+                      {campaign.subdivisionName ? ` · Lote ${campaign.subdivisionName}` : ' · Todo el campo'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {subtype === 'SOWING' && (
+                <p className="text-xs text-stone">Asociá la siembra a una campaña para ver su avance.</p>
+              )}
+            </div>
+          )}
+
+          {fields_.map(field => (
             <div key={field.key} className="space-y-2">
               <Label htmlFor={`record-${field.key}`}>
                 {field.label}
@@ -194,7 +266,7 @@ export function RecordComposer(): React.JSX.Element {
             <Button type="button" variant="outline" onClick={closeComposer}>
               Cancelar
             </Button>
-            <Button type="submit" className={PILL_PRIMARY} disabled={campaigns.length === 0}>
+            <Button type="submit" className={PILL_PRIMARY} disabled={fields.length === 0}>
               Guardar
             </Button>
           </DialogFooter>

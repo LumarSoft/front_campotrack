@@ -2,25 +2,37 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, MapPin, Pencil, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { PILL_OUTLINE, PILL_PRIMARY } from '@/components/ui/pill-button'
+import { PILL_PRIMARY } from '@/components/ui/pill-button'
 import { useField, useCrops } from '@/features/fields/hooks/use-fields-queries'
-import { useRemoveLocation, useRemoveSubdivision } from '@/features/fields/hooks/use-field-mutations'
+import { useRemoveSubdivision } from '@/features/fields/hooks/use-field-mutations'
 import { useDeleteCampaign } from '@/features/fields/hooks/use-campaign-mutations'
+import { useRecords } from '@/features/records/hooks/use-records-queries'
 import { useAuthStore } from '@/features/auth/store/use-auth-store'
 import { canManageFields, canModifyByRole } from '@/features/auth/roles'
-import { LocationFormDialog } from './location-form-dialog'
 import { SubdivisionFormDialog } from './subdivision-form-dialog'
 import { CampaignFormDialog } from './campaign-form-dialog'
-import type { FieldCampaign, FieldLocation, Subdivision } from '@/types/api/fields'
+import type { FieldRecord } from '@/types/api/records'
+import type { FieldCampaign, Subdivision } from '@/types/api/fields'
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
+/** Hectares sown for a campaign = sum of its SOWING records' `ha`. */
+function sownHaForCampaign(records: FieldRecord[], campaignId: number): number {
+  const total = records
+    .filter(record => record.subtype === 'SOWING' && record.campaign?.id === campaignId)
+    .reduce((sum, record) => {
+      const ha = record.data.ha
+      return sum + (typeof ha === 'number' && Number.isFinite(ha) ? ha : 0)
+    }, 0)
+  return Math.round(total * 100) / 100
 }
 
 export function FieldDetailView({ fieldId }: { fieldId: number }): React.JSX.Element {
@@ -28,15 +40,15 @@ export function FieldDetailView({ fieldId }: { fieldId: number }): React.JSX.Ele
   const fieldQuery = useField(fieldId)
   const cropsQuery = useCrops()
 
-  const removeLocation = useRemoveLocation(fieldId)
+  const recordsQuery = useRecords({ fieldId })
+  const records = recordsQuery.data ?? []
+
   const removeSubdivision = useRemoveSubdivision(fieldId)
   const deleteCampaign = useDeleteCampaign(fieldId)
 
-  const [locationOpen, setLocationOpen] = useState(false)
   const [subOpen, setSubOpen] = useState(false)
   const [editingSub, setEditingSub] = useState<Subdivision | undefined>(undefined)
   const [campaignOpen, setCampaignOpen] = useState(false)
-  const [pendingLocation, setPendingLocation] = useState<FieldLocation | null>(null)
   const [pendingSub, setPendingSub] = useState<Subdivision | null>(null)
   const [pendingCampaign, setPendingCampaign] = useState<FieldCampaign | null>(null)
 
@@ -53,7 +65,8 @@ export function FieldDetailView({ fieldId }: { fieldId: number }): React.JSX.Ele
 
   const field = fieldQuery.data
   const canManage = canManageFields(role)
-  const hasLocations = field.locations.length > 0
+  const assignedHa = Math.round(field.subdivisions.reduce((sum, sub) => sum + sub.ha, 0) * 100) / 100
+  const remainingHa = Math.round((field.totalHa - assignedHa) * 100) / 100
 
   const openCreateSub = (): void => {
     setEditingSub(undefined)
@@ -102,86 +115,83 @@ export function FieldDetailView({ fieldId }: { fieldId: number }): React.JSX.Ele
       <Tabs defaultValue="resumen">
         <TabsList>
           <TabsTrigger value="resumen">Resumen</TabsTrigger>
-          <TabsTrigger value="subdivisiones">Subdivisiones</TabsTrigger>
+          <TabsTrigger value="lotes">Lotes</TabsTrigger>
           <TabsTrigger value="campanias">Campañas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="resumen" className="mt-6">
           <div className="grid gap-4 sm:grid-cols-3">
-            <Metric label="Ubicaciones" value={field.locations.length} />
-            <Metric label="Subdivisiones" value={field.subdivisions.length} />
-            <Metric label="Campañas" value={field.campaigns.length} />
+            <Metric label="Lotes" value={String(field.subdivisions.length)} />
+            <Metric label="Hectáreas asignadas" value={`${assignedHa} / ${field.totalHa}`} />
+            <Metric label="Campañas" value={String(field.campaigns.length)} />
           </div>
         </TabsContent>
 
-        <TabsContent value="subdivisiones" className="mt-6 space-y-4">
-          <div className="flex flex-wrap justify-end gap-2">
+        <TabsContent value="lotes" className="mt-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-stone">
+              Asignado <span className="font-medium text-ink">{assignedHa} ha</span> de {field.totalHa} ha ·{' '}
+              <span className="font-medium text-ink">{remainingHa} ha</span> disponibles
+            </p>
             {canManage && (
-              <Button variant="outline" className={PILL_OUTLINE} onClick={() => setLocationOpen(true)}>
-                <MapPin className="size-4" />
-                Nueva ubicación
+              <Button className={PILL_PRIMARY} onClick={openCreateSub} disabled={remainingHa <= 0}>
+                <Plus className="size-4" />
+                Nuevo lote
               </Button>
             )}
-            <Button className={PILL_PRIMARY} onClick={openCreateSub} disabled={!hasLocations}>
-              <Plus className="size-4" />
-              Nueva subdivisión
-            </Button>
           </div>
 
-          {!hasLocations ? (
-            <div className="rounded-2xl border border-hairline-on-bone p-10 text-center text-sm text-stone">
-              Agregá primero una ubicación; las subdivisiones se reparten dentro de cada una.
-            </div>
-          ) : (
-            field.locations.map(location => (
-              <article key={location.id} className="rounded-2xl border border-hairline-on-bone p-6">
-                <div className="flex items-center justify-between gap-2 border-b border-hairline-on-bone pb-3">
-                  <h3 className="font-display text-base font-semibold text-ink">
-                    {location.locality} · {location.ha} ha
-                  </h3>
-                  {canManage && (
+          <ul className="divide-y divide-hairline-on-bone rounded-2xl border border-hairline-on-bone">
+            {field.subdivisions.map(sub => (
+              <li key={sub.id} className="flex items-center justify-between px-6 py-3 text-sm">
+                <span className="text-ink">
+                  {sub.name} <span className="text-stone">· {sub.ha} ha</span>
+                </span>
+                {canModifyByRole(role, sub.creatorRole) && (
+                  <span className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 text-stone hover:text-ink"
+                      onClick={() => openEditSub(sub)}
+                      aria-label="Editar"
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="size-8 text-stone hover:text-destructive"
-                      onClick={() => setPendingLocation(location)}
-                      aria-label="Eliminar ubicación"
+                      onClick={() => setPendingSub(sub)}
+                      aria-label="Eliminar"
                     >
                       <Trash2 className="size-4" />
                     </Button>
-                  )}
-                </div>
-                {location.subdivisions.length === 0 ? (
-                  <p className="pt-3 text-sm text-stone">Sin subdivisiones en esta ubicación.</p>
-                ) : (
-                  <ul className="divide-y divide-hairline-on-bone">
-                    {location.subdivisions.map(sub => (
-                      <li key={sub.id} className="flex items-center justify-between py-2.5 text-sm">
-                        <span className="text-ink">
-                          {sub.name} <span className="text-stone">· {sub.ha} ha</span>
-                        </span>
-                        {canModifyByRole(role, sub.creatorRole) && (
-                          <span className="flex gap-1">
-                            <Button variant="ghost" size="icon" className="size-8 text-stone hover:text-ink" onClick={() => openEditSub(sub)} aria-label="Editar">
-                              <Pencil className="size-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8 text-stone hover:text-destructive"
-                              onClick={() => setPendingSub(sub)}
-                              aria-label="Eliminar"
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                  </span>
                 )}
-              </article>
-            ))
+              </li>
+            ))}
+
+            {remainingHa > 0 && (
+              <li className="flex items-center justify-between bg-[color-mix(in_srgb,var(--stone)_8%,var(--bone))] px-6 py-3 text-sm">
+                <span className="text-stone italic">
+                  Sin asignar <span>· {remainingHa} ha</span>
+                </span>
+                {canManage && (
+                  <Button variant="outline" size="sm" onClick={openCreateSub}>
+                    <Plus className="size-4" />
+                    Crear lote
+                  </Button>
+                )}
+              </li>
+            )}
+          </ul>
+
+          {remainingHa > 0 && (
+            <p className="text-xs text-stone">
+              Quedan {remainingHa} ha sin asignar. No pueden quedar hectáreas sueltas: asignalas creando lotes hasta
+              cerrar el total del campo.
+            </p>
           )}
         </TabsContent>
 
@@ -202,33 +212,47 @@ export function FieldDetailView({ fieldId }: { fieldId: number }): React.JSX.Ele
               const subdivision = campaign.subdivisionId
                 ? field.subdivisions.find(s => s.id === campaign.subdivisionId)
                 : null
+              const sown = sownHaForCampaign(records, campaign.id)
+              const pct = campaign.ha > 0 ? Math.min(100, Math.round((sown / campaign.ha) * 100)) : 0
               return (
-                <article
-                  key={campaign.id}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-hairline-on-bone p-6"
-                >
-                  <div className="space-y-1">
-                    <p className="font-display font-semibold text-ink">
-                      {campaign.crop.name} · {campaign.cycle}
-                    </p>
-                    <p className="text-sm text-stone">
-                      {subdivision ? `Lote ${subdivision.name}` : 'Todo el campo'} · {campaign.ha} ha
-                    </p>
-                    <p className="text-xs text-stone">
-                      Siembra {formatDate(campaign.sowingDateEst)} · Cosecha {formatDate(campaign.harvestDateEst)}
-                    </p>
+                <article key={campaign.id} className="flex flex-col gap-4 rounded-2xl border border-hairline-on-bone p-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <p className="font-display font-semibold text-ink">
+                        {campaign.crop.name} · {campaign.cycle}
+                      </p>
+                      <p className="text-sm text-stone">
+                        {subdivision ? `Lote ${subdivision.name}` : 'Todo el campo'} · {campaign.ha} ha
+                      </p>
+                      <p className="text-xs text-stone">
+                        Siembra {formatDate(campaign.sowingDateEst)} · Cosecha {formatDate(campaign.harvestDateEst)} · Fin
+                        estimado {formatDate(campaign.endDateEst)}
+                      </p>
+                    </div>
+                    {canModifyByRole(role, campaign.creatorRole) && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-stone hover:text-destructive"
+                        onClick={() => setPendingCampaign(campaign)}
+                        aria-label="Eliminar campaña"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    )}
                   </div>
-                  {canModifyByRole(role, campaign.creatorRole) && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-stone hover:text-destructive"
-                      onClick={() => setPendingCampaign(campaign)}
-                      aria-label="Eliminar campaña"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  )}
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs text-stone">
+                      <span>Avance de siembra</span>
+                      <span className="font-medium text-ink">
+                        {sown} / {campaign.ha} ha ({pct}%)
+                      </span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--stone)_18%,var(--bone))]">
+                      <div className="h-full rounded-full bg-clay transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
                 </article>
               )
             })
@@ -236,37 +260,27 @@ export function FieldDetailView({ fieldId }: { fieldId: number }): React.JSX.Ele
         </TabsContent>
       </Tabs>
 
-      <LocationFormDialog open={locationOpen} onOpenChange={setLocationOpen} fieldId={fieldId} />
       <SubdivisionFormDialog
         open={subOpen}
         onOpenChange={setSubOpen}
         fieldId={fieldId}
-        locations={field.locations}
+        totalHa={field.totalHa}
+        subdivisions={field.subdivisions}
         subdivision={editingSub}
       />
       <CampaignFormDialog
         open={campaignOpen}
         onOpenChange={setCampaignOpen}
         fieldId={fieldId}
+        totalHa={field.totalHa}
         subdivisions={field.subdivisions}
         crops={cropsQuery.data ?? []}
       />
 
       <ConfirmDialog
-        open={pendingLocation !== null}
-        onOpenChange={openState => !openState && setPendingLocation(null)}
-        title="Eliminar ubicación"
-        description={`¿Eliminar "${pendingLocation?.locality}"? Se borrarán también sus subdivisiones.`}
-        loading={removeLocation.isPending}
-        onConfirm={() => {
-          if (!pendingLocation) return
-          removeLocation.mutate(pendingLocation.id, { onSuccess: () => setPendingLocation(null) })
-        }}
-      />
-      <ConfirmDialog
         open={pendingSub !== null}
         onOpenChange={openState => !openState && setPendingSub(null)}
-        title="Eliminar subdivisión"
+        title="Eliminar lote"
         description={`¿Eliminar el lote "${pendingSub?.name}"?`}
         loading={removeSubdivision.isPending}
         onConfirm={() => {
@@ -289,7 +303,7 @@ export function FieldDetailView({ fieldId }: { fieldId: number }): React.JSX.Ele
   )
 }
 
-function Metric({ label, value }: { label: string; value: number }): React.JSX.Element {
+function Metric({ label, value }: { label: string; value: string }): React.JSX.Element {
   return (
     <div className="rounded-2xl border border-hairline-on-bone p-6">
       <p className="font-display text-3xl font-bold text-ink">{value}</p>

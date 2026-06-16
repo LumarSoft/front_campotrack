@@ -22,12 +22,13 @@ export function useFinanceSummary(fieldId: number | null): FinanceSummaryResult 
   const params = fieldId ? { fieldId } : {}
   const costsQuery = useCosts(params)
   const incomesQuery = useIncomes(params)
-  const campaignsQuery = useCampaigns()
+  const campaignsQuery = useCampaigns(fieldId ?? undefined)
   const recordsQuery = useRecords(params)
 
   const costs = fieldId ? (costsQuery.data ?? []) : []
   const incomes = fieldId ? (incomesQuery.data ?? []) : []
-  const fieldCampaigns = (campaignsQuery.data ?? []).filter(campaign => campaign.fieldId === fieldId)
+  // Field-scoped campaigns already include those on the field's lotes.
+  const fieldCampaigns = fieldId ? (campaignsQuery.data ?? []) : []
   const records = fieldId ? (recordsQuery.data ?? []) : []
 
   return {

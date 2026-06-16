@@ -33,11 +33,12 @@ export default function FinancieroPage(): React.JSX.Element {
 
   const fieldId = selectedId === '' ? null : Number(selectedId)
   const summary = useFinanceSummary(fieldId)
-  const campaignsQuery = useCampaigns()
+  const campaignsQuery = useCampaigns(fieldId ?? undefined)
   const cropsQuery = useCrops()
   const quotesQuery = useQuotes()
 
-  const fieldCampaigns = (campaignsQuery.data ?? []).filter(campaign => campaign.fieldId === fieldId)
+  // Includes whole-field campaigns and those attached to the field's lotes.
+  const fieldCampaigns = fieldId ? (campaignsQuery.data ?? []) : []
   const crops = cropsQuery.data ?? []
   const quotes = quotesQuery.data ?? []
 

@@ -15,13 +15,15 @@ export interface FieldRecord {
   clientUpdatedAt: string | null
   creatorRole: UserRole
   createdAt: string
-  campaign: { id: number; cycle: string; cropName: string; fieldId: number | null; fieldName: string }
+  field: { id: number; name: string }
+  campaign: { id: number; cycle: string; cropName: string } | null
   subdivision: { id: number; name: string } | null
 }
 
 export interface CreateRecordRequest {
   subtype: RecordSubtype
-  campaignId: number
+  fieldId: number
+  campaignId?: number
   subdivisionId?: number
   recordDate: string
   data: Record<string, unknown>

@@ -55,7 +55,7 @@ export function profitabilityByCampaign(
 
   const executedByCampaign = new Map<number, number>()
   for (const record of records) {
-    if (record.subtype !== 'SOWING') continue
+    if (record.subtype !== 'SOWING' || !record.campaign) continue
     executedByCampaign.set(
       record.campaign.id,
       (executedByCampaign.get(record.campaign.id) ?? 0) + readNumber(record.data, 'ha'),

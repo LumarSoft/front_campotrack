@@ -14,6 +14,7 @@ export interface Campaign {
   subdivisionName: string | null
   sowingDateEst: string | null
   harvestDateEst: string | null
+  endDateEst: string | null
 }
 
 export interface CreateCampaignRequest {
@@ -23,6 +24,7 @@ export interface CreateCampaignRequest {
   cropId: number
   sowingDateEst?: string
   harvestDateEst?: string
+  endDateEst?: string
   ha: number
 }
 
@@ -31,5 +33,6 @@ export interface UpdateCampaignRequest {
   cropId?: number
   sowingDateEst?: string
   harvestDateEst?: string
+  endDateEst?: string
   ha?: number
 }

@@ -18,11 +18,11 @@ export function useEvents(params: ListEventsParams): UseQueryResult<CalendarEven
   })
 }
 
-export function useCampaigns(): UseQueryResult<Campaign[], ApiError> {
+export function useCampaigns(fieldId?: number): UseQueryResult<Campaign[], ApiError> {
   const token = useAuthToken()
   return useQuery<Campaign[], ApiError>({
-    queryKey: queryKeys.campaigns.all,
-    queryFn: () => campaignsService.list(token!),
+    queryKey: [...queryKeys.campaigns.all, fieldId ?? null],
+    queryFn: () => campaignsService.list({ fieldId }, token!),
     enabled: !!token,
   })
 }

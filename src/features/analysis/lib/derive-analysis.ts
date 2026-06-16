@@ -26,6 +26,10 @@ export interface DateRecommendation {
   dateKey: string
   /** How many past dates the average is based on. */
   basisCount: number
+  /** Where the suggestion comes from: field history or the crop's season. */
+  source?: 'history' | 'crop'
+  /** Human basis label (e.g. crop season) shown instead of the average count. */
+  note?: string
 }
 
 export interface DoseReference {
@@ -86,6 +90,7 @@ export function buildCampaignStats(campaigns: Campaign[], records: FieldRecord[]
     byId.set(campaign.id, { cycle: campaign.cycle, cropName: campaign.crop.name, ha: campaign.ha })
   }
   for (const record of records) {
+    if (!record.campaign) continue
     if (!byId.has(record.campaign.id)) {
       byId.set(record.campaign.id, { cycle: record.campaign.cycle, cropName: record.campaign.cropName, ha: null })
     }
@@ -93,7 +98,7 @@ export function buildCampaignStats(campaigns: Campaign[], records: FieldRecord[]
 
   const stats: CampaignStats[] = []
   for (const [campaignId, base] of byId) {
-    const own = records.filter(record => record.campaign.id === campaignId)
+    const own = records.filter(record => record.campaign?.id === campaignId)
     const harvests = own.filter(record => record.subtype === 'HARVEST')
     const yields = harvests
       .map(record => {
@@ -145,6 +150,28 @@ export function recommendDates(stats: CampaignStats[], now: Date): DateRecommend
   return recommendations
 }
 
+/**
+ * Sowing recommendation derived from the crop's season, used when the field has
+ * no historical sowing dates yet. Picks the most recent campaign whose crop has
+ * a defined sowing window.
+ */
+export function recommendFromCropSeason(campaigns: Campaign[], now: Date): DateRecommendation | null {
+  for (const campaign of campaigns) {
+    const from = campaign.crop.sowingFromMonth
+    if (!from) continue
+    const candidate = new Date(now.getFullYear(), from - 1, 1)
+    if (candidate < now) candidate.setFullYear(now.getFullYear() + 1)
+    return {
+      kind: 'SOWING',
+      dateKey: toDateKey(candidate),
+      basisCount: 0,
+      source: 'crop',
+      note: `Época de ${campaign.crop.name}`,
+    }
+  }
+  return null
+}
+
 /** Most recent product/dose used per application type, as a reference (dose is free text). */
 export function referenceDoses(records: FieldRecord[]): DoseReference[] {
   const byDateDesc = [...records].sort((a, b) => b.recordDate.localeCompare(a.recordDate))
@@ -155,7 +182,7 @@ export function referenceDoses(records: FieldRecord[]): DoseReference[] {
     if (!latest) continue
     const product = readString(latest.data, 'product')
     const dose = readString(latest.data, 'dose')
-    if (product && dose) references.push({ subtype, product, dose, cycle: latest.campaign.cycle })
+    if (product && dose) references.push({ subtype, product, dose, cycle: latest.campaign?.cycle ?? '—' })
   }
 
   return references
@@ -167,11 +194,18 @@ export function buildFieldAnalysis(campaigns: Campaign[], records: FieldRecord[]
     .filter(stat => stat.yieldQqHa !== null)
     .map(stat => ({ label: stat.cycle, value: stat.yieldQqHa! }))
 
+  const recommendations = recommendDates(campaignStats, now)
+  // Fall back to the crop's season for sowing when there's no history yet.
+  if (!recommendations.some(recommendation => recommendation.kind === 'SOWING')) {
+    const cropRecommendation = recommendFromCropSeason(campaigns, now)
+    if (cropRecommendation) recommendations.push(cropRecommendation)
+  }
+
   return {
     campaignStats,
     yieldSeries,
     averageYieldQqHa: average(yieldSeries.map(point => point.value)),
-    recommendations: recommendDates(campaignStats, now),
+    recommendations,
     referenceDoses: referenceDoses(records),
     hasData: campaignStats.length > 0,
   }

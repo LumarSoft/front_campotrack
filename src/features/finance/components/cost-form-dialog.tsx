@@ -13,8 +13,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import { PILL_PRIMARY } from '@/components/ui/pill-button'
 import { useSaveCost } from '../hooks/use-finance-mutations'
+import { useProviders } from '@/features/costs/hooks/use-providers-queries'
 import { COST_CATEGORY_LABELS, COST_CATEGORY_ORDER, COST_TYPE_LABELS, CURRENCIES } from '../config'
 import type { Campaign } from '@/types/api/campaigns'
 import type { Cost, CostCategory, CostType, Currency } from '@/types/api/finance'
@@ -31,8 +33,11 @@ const NONE = 'none'
 export function CostFormDialog({ open, onOpenChange, campaigns, cost }: CostFormDialogProps): React.JSX.Element {
   const isEdit = cost !== undefined
   const saveCost = useSaveCost()
+  const providersQuery = useProviders()
+  const providers = providersQuery.data ?? []
 
   const [campaignId, setCampaignId] = useState('')
+  const [providerId, setProviderId] = useState('')
   const [category, setCategory] = useState<CostCategory>('INPUTS')
   const [amount, setAmount] = useState('')
   const [currency, setCurrency] = useState<Currency>('ARS')
@@ -45,6 +50,7 @@ export function CostFormDialog({ open, onOpenChange, campaigns, cost }: CostForm
   if (open && !wasOpen) {
     setWasOpen(true)
     setCampaignId(cost ? String(cost.campaignId) : '')
+    setProviderId(cost?.provider ? String(cost.provider.id) : '')
     setCategory(cost?.category ?? 'INPUTS')
     setAmount(cost ? String(cost.amount) : '')
     setCurrency(cost?.currency ?? 'ARS')
@@ -56,6 +62,8 @@ export function CostFormDialog({ open, onOpenChange, campaigns, cost }: CostForm
     setWasOpen(false)
   }
 
+  const providerOptions = providers.map(provider => ({ value: String(provider.id), label: provider.name }))
+
   const handleSubmit = (event: React.FormEvent): void => {
     event.preventDefault()
     if (!isEdit && !campaignId) return setError('Elegí una campaña.')
@@ -65,6 +73,7 @@ export function CostFormDialog({ open, onOpenChange, campaigns, cost }: CostForm
 
     const payload = {
       campaignId: isEdit ? cost.campaignId : Number(campaignId),
+      providerId: providerId ? Number(providerId) : undefined,
       category,
       amount: numericAmount,
       currency,
@@ -105,6 +114,20 @@ export function CostFormDialog({ open, onOpenChange, campaigns, cost }: CostForm
               </Select>
             )}
           </div>
+
+          {providers.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="cost-provider">Proveedor (opcional)</Label>
+              <SearchableSelect
+                id="cost-provider"
+                options={providerOptions}
+                value={providerId}
+                onChange={setProviderId}
+                placeholder="Sin proveedor"
+                searchPlaceholder="Buscar proveedor…"
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">

@@ -23,6 +23,7 @@ export interface Cost {
   note: string | null
   creatorRole: UserRole
   campaign: CampaignBrief
+  provider: { id: number; name: string } | null
 }
 
 export interface Income {
@@ -49,6 +50,7 @@ export interface Quote {
 
 export interface CreateCostRequest {
   campaignId: number
+  providerId?: number
   category: CostCategory
   amount: number
   currency: Currency

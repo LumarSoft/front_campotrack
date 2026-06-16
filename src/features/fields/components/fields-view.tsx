@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { MapPin, Pencil, Plus, Trash2, Users } from 'lucide-react'
+import { ArrowRight, MapPin, Pencil, Plus, Trash2, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -49,7 +49,12 @@ export function FieldsView(): React.JSX.Element {
         actions={
           canManage && (
             <>
-              <Button variant="outline" className={PILL_OUTLINE} onClick={() => setClientsOpen(true)}>
+              <Button
+                variant="outline"
+                className={PILL_OUTLINE}
+                onClick={() => setClientsOpen(true)}
+                data-tour="clients-action"
+              >
                 <Users className="size-4" />
                 Clientes
               </Button>
@@ -147,10 +152,17 @@ export function FieldsView(): React.JSX.Element {
                 </div>
               </div>
 
-              <div className="flex gap-3 text-xs text-stone">
-                <span>{field.locationCount} ubic.</span>
-                <span>{field.subdivisionCount} lotes</span>
-                <span>{field.campaignCount} campañas</span>
+              <div className="flex items-center justify-between gap-3 text-xs text-stone">
+                <span>
+                  {field.subdivisionCount} lotes · {field.campaignCount} campañas
+                </span>
+                <Link
+                  href={`/campos/${field.id}`}
+                  className="inline-flex items-center gap-1 font-medium text-clay underline-offset-4 hover:underline"
+                >
+                  Gestionar lotes y campañas
+                  <ArrowRight className="size-3.5" />
+                </Link>
               </div>
             </article>
           ))}

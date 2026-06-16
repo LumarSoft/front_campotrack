@@ -1,60 +1,24 @@
-'use client'
-
-import { useState } from 'react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
+import { BarChart3 } from 'lucide-react'
 import { PageHeader } from '@/components/layout/page-header'
-import { useFields } from '@/features/fields/hooks/use-fields-queries'
-import { FieldAnalysisView } from '@/features/analysis/components/field-analysis-view'
 
 /**
- * Analysis & recommendations (info.md §10): compare a field's campaigns by yield
- * and surface agronomic recommendations. Financial charts arrive with the
- * Financiero module (deferred).
+ * Analysis & recommendations — deferred to Fase 2 (along with Ganadería).
  */
 export default function AnalisisPage(): React.JSX.Element {
-  const fieldsQuery = useFields()
-  const fields = fieldsQuery.data ?? []
-  const [selectedId, setSelectedId] = useState('')
-
-  // Auto-select the first field once loaded (render-phase, not an effect).
-  if (selectedId === '' && fields.length > 0) {
-    setSelectedId(String(fields[0].id))
-  }
-
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <PageHeader
-        kicker="Inteligencia"
-        title="Análisis y recomendaciones"
-        description="Compará el rendimiento de tus campañas y recibí sugerencias basadas en el historial."
-        actions={
-          fields.length > 0 ? (
-            <Select value={selectedId} onValueChange={setSelectedId}>
-              <SelectTrigger className="w-56">
-                <SelectValue placeholder="Elegí un campo" />
-              </SelectTrigger>
-              <SelectContent>
-                {fields.map(field => (
-                  <SelectItem key={field.id} value={String(field.id)}>
-                    {field.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : undefined
-        }
-      />
-
-      {fieldsQuery.isLoading ? (
-        <Skeleton className="h-72 w-full rounded-2xl bg-[color-mix(in_srgb,var(--stone)_14%,var(--bone))]" />
-      ) : fields.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-hairline-on-bone p-10 text-center text-sm text-stone">
-          Todavía no tenés campos. Cargá uno para empezar a analizar tus campañas.
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader kicker="Inteligencia" title="Análisis y recomendaciones" />
+      <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-hairline-on-bone p-14 text-center">
+        <span className="flex size-12 items-center justify-center rounded-full bg-wheat/15 text-[#8a5a1a]">
+          <BarChart3 className="size-6" />
+        </span>
+        <div>
+          <p className="font-display text-lg font-semibold text-ink">Disponible en Fase 2</p>
+          <p className="mt-1 text-sm text-stone">
+            El análisis de campañas y las recomendaciones automáticas llegan en una próxima etapa.
+          </p>
         </div>
-      ) : (
-        selectedId !== '' && <FieldAnalysisView fieldId={Number(selectedId)} />
-      )}
+      </div>
     </div>
   )
 }

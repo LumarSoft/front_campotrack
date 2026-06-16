@@ -6,7 +6,7 @@ export interface Subdivision {
   id: number
   name: string
   ha: number
-  locationId: number
+  locationId: number | null
   creatorRole: UserRole
 }
 
@@ -30,6 +30,7 @@ export interface FieldCampaign {
   subdivisionId: number | null
   sowingDateEst: string | null
   harvestDateEst: string | null
+  endDateEst: string | null
 }
 
 export interface FieldListItem {
@@ -75,7 +76,7 @@ export interface CreateLocationRequest {
 }
 
 export interface CreateSubdivisionRequest {
-  locationId: number
+  locationId?: number
   name: string
   ha: number
 }

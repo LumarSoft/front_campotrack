@@ -47,6 +47,7 @@ export function CostsTable({ costs, campaigns }: { costs: Cost[]; campaigns: Cam
             <TableRow>
               <TableHead>Fecha</TableHead>
               <TableHead>Campaña</TableHead>
+              <TableHead>Proveedor</TableHead>
               <TableHead>Categoría</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead className="text-right">Monto</TableHead>
@@ -60,6 +61,7 @@ export function CostsTable({ costs, campaigns }: { costs: Cost[]; campaigns: Cam
                 <TableCell className="text-stone">
                   {cost.campaign.cropName} {cost.campaign.cycle}
                 </TableCell>
+                <TableCell className="text-stone">{cost.provider?.name ?? '—'}</TableCell>
                 <TableCell className="text-ink">{COST_CATEGORY_LABELS[cost.category]}</TableCell>
                 <TableCell className="text-stone">
                   {cost.costType ? <Badge variant="secondary">{COST_TYPE_LABELS[cost.costType]}</Badge> : '—'}
@@ -79,7 +81,7 @@ export function CostsTable({ costs, campaigns }: { costs: Cost[]; campaigns: Cam
             ))}
             {costs.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-sm text-stone">
+                <TableCell colSpan={7} className="py-8 text-center text-sm text-stone">
                   Sin costos cargados para este campo.
                 </TableCell>
               </TableRow>

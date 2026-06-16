@@ -65,7 +65,8 @@ export function RecommendationsPanel({
                       {EVENT_TYPE_LABELS[recommendation.kind]} · {formatDayLong(recommendation.dateKey)}
                     </p>
                     <p className="text-xs text-stone">
-                      Promedio de {recommendation.basisCount} campaña{recommendation.basisCount === 1 ? '' : 's'}
+                      {recommendation.note ??
+                        `Promedio de ${recommendation.basisCount} campaña${recommendation.basisCount === 1 ? '' : 's'}`}
                     </p>
                   </div>
                   <Button
