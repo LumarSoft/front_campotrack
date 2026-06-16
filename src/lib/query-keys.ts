@@ -13,6 +13,9 @@ export const queryKeys = {
   clients: {
     all: ['clients'] as const,
   },
+  providers: {
+    all: ['providers'] as const,
+  },
   fields: {
     all: ['fields'] as const,
     detail: (id: number) => ['fields', id] as const,

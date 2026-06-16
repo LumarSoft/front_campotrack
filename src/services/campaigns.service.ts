@@ -3,8 +3,9 @@ import type { Campaign, CreateCampaignRequest, UpdateCampaignRequest } from '@/t
 
 /** Campaigns domain service. */
 export const campaignsService = {
-  list(token: string): Promise<Campaign[]> {
-    return apiRequest<Campaign[]>('/campaigns', { token })
+  list(params: { fieldId?: number }, token: string): Promise<Campaign[]> {
+    const qs = params.fieldId ? `?fieldId=${params.fieldId}` : ''
+    return apiRequest<Campaign[]>(`/campaigns${qs}`, { token })
   },
 
   create(payload: CreateCampaignRequest, token: string): Promise<Campaign> {

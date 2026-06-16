@@ -145,7 +145,13 @@ export function RecordsView(): React.JSX.Element {
             key={record.id}
             subtype={record.subtype}
             dateKey={eventDateKey(record.recordDate)}
-            fieldLabel={`${record.campaign.fieldName} · ${record.campaign.cropName} ${record.campaign.cycle}`}
+            fieldLabel={[
+              record.field.name,
+              record.subdivision?.name,
+              record.campaign ? `${record.campaign.cropName} ${record.campaign.cycle}` : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
             summary={summarizeRecord(record.subtype, record.data)}
             badge={
               <span className="inline-flex items-center gap-1 rounded-full border border-clay/25 bg-clay/10 px-2 py-0.5 text-[11px] text-field">

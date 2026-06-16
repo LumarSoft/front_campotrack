@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { Switch } from '@/components/ui/switch'
 import { useNotificationPrefsStore } from '@/features/notifications/store/use-notification-prefs-store'
 import type { NotificationKind } from '@/features/notifications/lib/derive-notifications'
 
@@ -10,28 +10,6 @@ const PREF_LABELS: { key: NotificationKind; title: string; detail: string }[] = 
   { key: 'day_before', title: 'Alarma · día anterior', detail: 'Eventos con alarma para mañana.' },
   { key: 'same_day', title: 'Alarma · el mismo día', detail: 'Eventos con alarma para hoy.' },
 ]
-
-function Toggle({ on, onClick }: { on: boolean; onClick: () => void }): React.JSX.Element {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      onClick={onClick}
-      className={cn(
-        'relative h-6 w-11 shrink-0 rounded-full transition-colors',
-        on ? 'bg-clay' : 'bg-[color-mix(in_srgb,var(--stone)_30%,var(--bone))]',
-      )}
-    >
-      <span
-        className={cn(
-          'absolute top-0.5 size-5 rounded-full bg-bone transition-transform',
-          on ? 'translate-x-[1.375rem]' : 'translate-x-0.5',
-        )}
-      />
-    </button>
-  )
-}
 
 export function NotificationPrefs(): React.JSX.Element {
   const prefs = useNotificationPrefsStore()
@@ -48,7 +26,11 @@ export function NotificationPrefs(): React.JSX.Element {
               <p className="font-medium text-ink">{pref.title}</p>
               <p className="text-sm text-stone">{pref.detail}</p>
             </div>
-            <Toggle on={prefs[pref.key]} onClick={() => prefs.toggle(pref.key)} />
+            <Switch
+              checked={prefs[pref.key]}
+              onCheckedChange={() => prefs.toggle(pref.key)}
+              aria-label={pref.title}
+            />
           </li>
         ))}
       </ul>

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -14,8 +13,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { SearchableSelect } from '@/components/ui/searchable-select'
+import { formatSowingWindow } from '@/lib/months'
 import { useCreateCampaign } from '@/features/fields/hooks/use-campaign-mutations'
-import { useCreateCrop } from '@/features/fields/hooks/use-crop-mutations'
 import type { CreateCampaignRequest } from '@/types/api/campaigns'
 import type { Crop } from '@/types/api/crops'
 import type { Subdivision } from '@/types/api/fields'
@@ -26,19 +26,29 @@ interface CampaignFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   fieldId: number
+  totalHa: number
   subdivisions: Subdivision[]
   crops: Crop[]
+}
+
+/** Next upcoming yyyy-mm-dd for a given month (1-12), day 1. */
+function nextDateForMonth(month: number, now: Date): string {
+  let candidate = new Date(now.getFullYear(), month - 1, 1)
+  if (candidate < now) candidate = new Date(now.getFullYear() + 1, month - 1, 1)
+  const y = candidate.getFullYear()
+  const m = String(candidate.getMonth() + 1).padStart(2, '0')
+  return `${y}-${m}-01`
 }
 
 export function CampaignFormDialog({
   open,
   onOpenChange,
   fieldId,
+  totalHa,
   subdivisions,
   crops,
 }: CampaignFormDialogProps): React.JSX.Element {
   const createCampaign = useCreateCampaign(fieldId)
-  const createCrop = useCreateCrop()
 
   const [scope, setScope] = useState(FIELD_SCOPE)
   const [cropId, setCropId] = useState('')
@@ -46,7 +56,7 @@ export function CampaignFormDialog({
   const [ha, setHa] = useState('')
   const [sowing, setSowing] = useState('')
   const [harvest, setHarvest] = useState('')
-  const [newCrop, setNewCrop] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [wasOpen, setWasOpen] = useState(false)
 
@@ -55,26 +65,35 @@ export function CampaignFormDialog({
     setScope(FIELD_SCOPE)
     setCropId('')
     setCycle('')
-    setHa('')
+    setHa(String(totalHa))
     setSowing('')
     setHarvest('')
-    setNewCrop('')
+    setEndDate('')
     setError(null)
   } else if (!open && wasOpen) {
     setWasOpen(false)
   }
 
-  const handleAddCrop = (): void => {
-    if (newCrop.trim().length < 2) return
-    createCrop.mutate(
-      { name: newCrop.trim() },
-      {
-        onSuccess: crop => {
-          setCropId(String(crop.id))
-          setNewCrop('')
-        },
-      },
-    )
+  const cropOptions = crops.map(crop => ({ value: String(crop.id), label: crop.name }))
+  const selectedCrop = crops.find(crop => String(crop.id) === cropId)
+  const sowingWindow = selectedCrop ? formatSowingWindow(selectedCrop.sowingFromMonth, selectedCrop.sowingToMonth) : null
+  const isLoteScope = scope !== FIELD_SCOPE
+
+  // Surface comes from the chosen scope: the lote's area, or the field total.
+  const handleScopeChange = (value: string): void => {
+    setScope(value)
+    if (value === FIELD_SCOPE) {
+      setHa(String(totalHa))
+    } else {
+      const sub = subdivisions.find(item => String(item.id) === value)
+      if (sub) setHa(String(sub.ha))
+    }
+  }
+
+  const handleCropChange = (value: string): void => {
+    setCropId(value)
+    const crop = crops.find(item => String(item.id) === value)
+    if (crop?.sowingFromMonth && !sowing) setSowing(nextDateForMonth(crop.sowingFromMonth, new Date()))
   }
 
   const handleSubmit = (event: React.FormEvent): void => {
@@ -90,6 +109,7 @@ export function CampaignFormDialog({
       ha: haValue,
       sowingDateEst: sowing || undefined,
       harvestDateEst: harvest || undefined,
+      endDateEst: endDate || undefined,
       ...(scope === FIELD_SCOPE ? { fieldId } : { subdivisionId: Number(scope) }),
     }
     createCampaign.mutate(payload, { onSuccess: () => onOpenChange(false) })
@@ -105,7 +125,7 @@ export function CampaignFormDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Alcance</Label>
-            <Select value={scope} onValueChange={setScope}>
+            <Select value={scope} onValueChange={handleScopeChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -121,31 +141,24 @@ export function CampaignFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Cultivo</Label>
-            {crops.length > 0 && (
-              <Select value={cropId} onValueChange={setCropId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Elegí un cultivo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {crops.map(crop => (
-                    <SelectItem key={crop.id} value={String(crop.id)}>
-                      {crop.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            <div className="flex gap-2">
-              <Input
-                value={newCrop}
-                onChange={e => setNewCrop(e.target.value)}
-                placeholder={crops.length > 0 ? 'Agregar otro cultivo' : 'Agregá tu primer cultivo'}
+            <Label htmlFor="camp-crop">Cultivo</Label>
+            {crops.length > 0 ? (
+              <SearchableSelect
+                id="camp-crop"
+                options={cropOptions}
+                value={cropId}
+                onChange={handleCropChange}
+                placeholder="Elegí un cultivo"
+                searchPlaceholder="Buscar cultivo…"
               />
-              <Button type="button" variant="outline" onClick={handleAddCrop} disabled={createCrop.isPending}>
-                <Plus className="size-4" />
-              </Button>
-            </div>
+            ) : (
+              <p className="rounded-md border border-dashed border-hairline-on-bone px-3 py-2 text-sm text-stone">
+                No hay cultivos cargados. Agregalos en la sección Costos.
+              </p>
+            )}
+            {sowingWindow && (
+              <p className="text-xs text-stone">Época de siembra sugerida: {sowingWindow}.</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -155,11 +168,21 @@ export function CampaignFormDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="camp-ha">Superficie (ha)</Label>
-              <Input id="camp-ha" type="number" min="0" step="any" value={ha} onChange={e => setHa(e.target.value)} placeholder="300" />
+              <Input
+                id="camp-ha"
+                type="number"
+                min="0"
+                step="any"
+                value={ha}
+                onChange={e => setHa(e.target.value)}
+                placeholder="300"
+                disabled={isLoteScope}
+              />
+              {isLoteScope && <p className="text-xs text-stone">Tomada del lote elegido.</p>}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-2">
               <Label htmlFor="camp-sowing">Siembra estimada</Label>
               <Input id="camp-sowing" type="date" value={sowing} onChange={e => setSowing(e.target.value)} />
@@ -167,6 +190,10 @@ export function CampaignFormDialog({
             <div className="space-y-2">
               <Label htmlFor="camp-harvest">Cosecha estimada</Label>
               <Input id="camp-harvest" type="date" value={harvest} onChange={e => setHarvest(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="camp-end">Fin estimado</Label>
+              <Input id="camp-end" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
             </div>
           </div>
 
@@ -176,7 +203,7 @@ export function CampaignFormDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={createCampaign.isPending}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={createCampaign.isPending}>
+            <Button type="submit" disabled={createCampaign.isPending || crops.length === 0}>
               Crear campaña
             </Button>
           </DialogFooter>

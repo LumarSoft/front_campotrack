@@ -1,8 +1,8 @@
 import type { LucideIcon } from 'lucide-react'
 import {
-  BarChart3,
   CalendarRange,
   ClipboardList,
+  Coins,
   Compass,
   LayoutDashboard,
   MapPinned,
@@ -12,6 +12,7 @@ import {
   SlidersHorizontal,
   Sparkles,
   Sprout,
+  Truck,
   Users,
   Wallet,
 } from 'lucide-react'
@@ -112,8 +113,8 @@ const CAMPOS_STEPS: TourStep[] = [
     id: 'intro',
     target: '[data-tour="page-header"]',
     icon: Sprout,
-    title: 'Campos y campañas',
-    body: 'Acá administrás tus campos, sus subdivisiones, los clientes asociados y las campañas activas o históricas.',
+    title: 'Empezá por tus campos',
+    body: 'Lo primero es crear los campos sobre los que vas a trabajar. Acá administrás cada campo, sus lotes, los clientes asociados y sus campañas.',
     placement: 'bottom',
     padding: 8,
   },
@@ -122,8 +123,26 @@ const CAMPOS_STEPS: TourStep[] = [
     target: '[data-tour="primary-action"]',
     icon: Plus,
     title: 'Crear un campo nuevo',
-    body: 'Desde acá agregás un campo: nombre, ubicación y hectáreas. Luego le sumás subdivisiones y campañas.',
+    body: 'Cargá nombre y superficie total, y asignale un cliente con el buscador. Después entrás al campo para dividirlo en lotes —cuyas hectáreas deben cerrar con el total— y dar de alta sus campañas.',
     placement: 'left',
+    padding: 8,
+  },
+  {
+    id: 'clients',
+    target: '[data-tour="clients-action"]',
+    icon: Users,
+    title: 'Tus clientes',
+    body: 'Creá acá los clientes para después asignárselos a cada campo desde el buscador al crearlo.',
+    placement: 'left',
+    padding: 8,
+  },
+  {
+    id: 'campaigns',
+    target: '[data-tour="page-header"]',
+    icon: Sprout,
+    title: 'Campañas del campo',
+    body: 'Entrá a un campo y abrí la pestaña "Campañas" para darlas de alta: cultivo, ciclo, superficie y fecha estimada de finalización.',
+    placement: 'bottom',
     padding: 8,
   },
 ]
@@ -164,9 +183,30 @@ const REGISTROS_STEPS: TourStep[] = [
     target: '[data-tour="fab"]',
     icon: Plus,
     title: 'Cargar un registro',
-    body: 'Usá el botón flotante para cargar un nuevo registro desde cualquier pantalla. Es la acción central de tu día a día.',
+    body: 'Usá el botón flotante para cargar un registro desde cualquier pantalla. Solo elegís el campo y, si tiene, el lote — la campaña es opcional. Es la acción central de tu día a día.',
     placement: 'top',
     padding: 12,
+  },
+]
+
+const COSTOS_STEPS: TourStep[] = [
+  {
+    id: 'intro',
+    target: '[data-tour="page-header"]',
+    icon: Coins,
+    title: 'Costos, cultivos y proveedores',
+    body: 'Acá centralizás los datos que alimentan tus costos: el catálogo de cultivos y tus proveedores. Los cultivos ya no se cargan desde Configuración.',
+    placement: 'bottom',
+    padding: 8,
+  },
+  {
+    id: 'tabs',
+    target: '[data-tour="costos-tabs"]',
+    icon: Truck,
+    title: 'Cultivos y proveedores',
+    body: 'En "Cultivos" mantenés la lista que vas a usar en las campañas. En "Proveedores" cargás a quién le comprás insumos o servicios para asociarlos a los costos.',
+    placement: 'bottom',
+    padding: 8,
   },
 ]
 
@@ -203,25 +243,13 @@ const FINANCIERO_STEPS: TourStep[] = [
   },
 ]
 
-const ANALISIS_STEPS: TourStep[] = [
-  {
-    id: 'intro',
-    target: '[data-tour="page-header"]',
-    icon: BarChart3,
-    title: 'Análisis y recomendaciones',
-    body: 'Tendencias de rinde, comparativas entre campañas y sugerencias automáticas en función de tus datos cargados.',
-    placement: 'bottom',
-    padding: 8,
-  },
-]
-
 const CONFIGURACION_STEPS: TourStep[] = [
   {
     id: 'intro',
     target: '[data-tour="page-header"]',
     icon: Settings,
     title: 'Tu cuenta',
-    body: 'Editá tu perfil, ajustá las notificaciones (qué te avisamos y cuándo) y, si sos administrador, mantenés el catálogo de cultivos.',
+    body: 'Editá tu perfil y ajustá las notificaciones (qué te avisamos y cuándo). Los cultivos y proveedores ahora se administran en la sección Costos.',
     placement: 'bottom',
     padding: 8,
   },
@@ -232,9 +260,9 @@ export const TOURS: Record<string, TourStep[]> = {
   campos: CAMPOS_STEPS,
   calendario: CALENDARIO_STEPS,
   registros: REGISTROS_STEPS,
+  costos: COSTOS_STEPS,
   equipo: EQUIPO_STEPS,
   financiero: FINANCIERO_STEPS,
-  analisis: ANALISIS_STEPS,
   configuracion: CONFIGURACION_STEPS,
 }
 
@@ -244,8 +272,8 @@ export const ROUTE_TO_TOUR: Record<string, string> = {
   '/campos': 'campos',
   '/calendario': 'calendario',
   '/registros': 'registros',
+  '/costos': 'costos',
   '/equipo': 'equipo',
   '/financiero': 'financiero',
-  '/analisis': 'analisis',
   '/configuracion': 'configuracion',
 }

@@ -2,12 +2,19 @@
 export interface Crop {
   id: number
   name: string
+  /** Optional sowing window (months 1-12) — feeds recommendations and hints. */
+  sowingFromMonth: number | null
+  sowingToMonth: number | null
 }
 
 export interface CreateCropRequest {
   name: string
+  sowingFromMonth?: number
+  sowingToMonth?: number
 }
 
 export interface UpdateCropRequest {
-  name: string
+  name?: string
+  sowingFromMonth?: number
+  sowingToMonth?: number
 }

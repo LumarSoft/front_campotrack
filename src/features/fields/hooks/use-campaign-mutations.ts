@@ -14,6 +14,7 @@ function useCampaignCacheSync(fieldId: number): () => void {
   return () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.fields.detail(fieldId) })
     void queryClient.invalidateQueries({ queryKey: queryKeys.fields.all })
+    void queryClient.invalidateQueries({ queryKey: queryKeys.campaigns.all })
   }
 }
 
