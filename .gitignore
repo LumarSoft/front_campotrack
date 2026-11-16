@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Seguridad (16/11/2026): que no se suban claves, volcados ni archivos subidos
+# Variables de entorno: el .env* de arriba también tapaba el ejemplo, que sí se versiona
+!.env.example
+# Volcados de base: .sql sueltos en la raíz o con dump/backup en el nombre, y comprimidos
+/*.sql
+*dump*.sql
+*backup*.sql
+*.sql.gz
+*.dump
+# Llaves y certificados (*.pem ya estaba arriba)
+*.key
+*.p12
+*.pfx
+# Logs
+*.log
